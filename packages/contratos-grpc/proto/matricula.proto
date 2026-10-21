@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package matricula;
+
+service MatriculaService {
+  rpc SolicitarMatricula(SolicitarMatriculaRequest) returns (SolicitarMatriculaResponse);
+
+  // T2
+  rpc ListarMatriculas(ListarMatriculasRequest) returns (ListarMatriculasResponse);
+}
+
+enum StatusMatricula {
+  STATUS_MATRICULA_NAO_ESPECIFICADO = 0;
+  DEFERIDA = 1;
+  INDEFERIDA_SEM_VAGA = 2;
+  INDEFERIDA_PRE_REQUISITO = 3;
+}
+
+message SolicitarMatriculaRequest {
+  string matricula_aluno = 1;
+  string codigo_turma = 2;
+  string request_id = 3; // T2
+}
+
+message SolicitarMatriculaResponse {
+  string protocolo = 1;
+  StatusMatricula status = 2;
+  string mensagem = 3;
+  repeated string pendencias = 4;
+  string codigo_turma = 5;  // T2
+  string solicitada_em = 6; // T2, ISO-8601
+}
+
+message Matricula {
+  string protocolo = 1;
+  string codigo_turma = 2;
+  StatusMatricula status = 3;
+  string mensagem = 4;
+  repeated string pendencias = 5;
+  string solicitada_em = 6;
+}
+
+message ListarMatriculasRequest {
+  string matricula_aluno = 1;
+}
+
+message ListarMatriculasResponse {
+  repeated Matricula matriculas = 1;
+}

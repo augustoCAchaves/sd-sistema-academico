@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package registro;
+
+service RegistroAcademicoService {
+  rpc ConsultarVagas(ConsultarVagasRequest) returns (ConsultarVagasResponse);
+  rpc VerificarPreRequisitos(VerificarPreRequisitosRequest) returns (VerificarPreRequisitosResponse);
+
+  // T2
+  rpc ListarTurmas(ListarTurmasRequest) returns (ListarTurmasResponse);
+  rpc ReservarVaga(ReservarVagaRequest) returns (ReservarVagaResponse);
+  rpc LiberarVaga(LiberarVagaRequest) returns (LiberarVagaResponse);
+  rpc ConsultarAluno(ConsultarAlunoRequest) returns (ConsultarAlunoResponse);
+}
+
+message ConsultarVagasRequest {
+  string codigo_turma = 1;
+}
+
+message ConsultarVagasResponse {
+  string codigo_turma = 1;
+  string nome_disciplina = 2;
+  int32 vagas_totais = 3;
+  int32 vagas_ocupadas = 4;
+  int32 vagas_disponiveis = 5;
+  repeated string pre_requisitos = 6; // T2
+}
+
+message VerificarPreRequisitosRequest {
+  string matricula_aluno = 1;
+  string codigo_turma = 2;
+}
+
+message VerificarPreRequisitosResponse {
+  bool atendido = 1;
+  repeated string disciplinas_pendentes = 2;
+}
+
+message Turma {
+  string codigo_turma = 1;
+  string nome_disciplina = 2;
+  int32 vagas_totais = 3;
+  int32 vagas_ocupadas = 4;
+  int32 vagas_disponiveis = 5;
+  repeated string pre_requisitos = 6;
+}
+
+message ListarTurmasRequest {}
+
+message ListarTurmasResponse {
+  repeated Turma turmas = 1;
+}
+
+message ReservarVagaRequest {
+  string codigo_turma = 1;
+}
+
+// Turma lotada não é erro: volta reservada = false.
+message ReservarVagaResponse {
+  bool reservada = 1;
+  int32 vagas_disponiveis = 2;
+}
+
+message LiberarVagaRequest {
+  string codigo_turma = 1;
+}
+
+message LiberarVagaResponse {
+  int32 vagas_disponiveis = 1;
+}
+
+message ConsultarAlunoRequest {
+  string matricula_aluno = 1;
+}
+
+message ConsultarAlunoResponse {
+  string matricula_aluno = 1;
+  string nome = 2;
+}
