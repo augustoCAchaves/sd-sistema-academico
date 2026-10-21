@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+*.log
+.vscode/
+.idea/
+
+# Arquivos de apoio local (nao versionados)
+CLAUDE.md
+docs/PLANO.md
+docs/estudo/

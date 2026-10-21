@@ -1,0 +1,14 @@
+{
+  "name": "sd-sistema-academico",
+  "private": true,
+  "description": "Sistema acadêmico distribuído: Frontend Vue → API Gateway NestJS (REST + JWT) → microsserviços gRPC + PostgreSQL",
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "db:up": "docker compose up -d postgres-registro postgres-matricula",
+    "db:psql:registro": "docker compose exec postgres-registro psql -U academico -d registro_db",
+    "db:psql:matricula": "docker compose exec postgres-matricula psql -U academico -d matricula_db"
+  }
+}

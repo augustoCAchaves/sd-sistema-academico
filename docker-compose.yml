@@ -1,0 +1,38 @@
+services:
+  postgres-registro:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-academico}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-academico}
+      POSTGRES_DB: registro_db
+    volumes:
+      - pgdata-registro:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d registro_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  postgres-matricula:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-academico}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-academico}
+      POSTGRES_DB: matricula_db
+    volumes:
+      - pgdata-matricula:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d matricula_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata-registro:
+  pgdata-matricula:
