@@ -75,6 +75,18 @@ services:
     ports:
       - "3000:3000"
 
+  frontend:
+    build:
+      context: .
+      dockerfile: apps/frontend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api-gateway
+    environment:
+      GATEWAY_HOST: ${GATEWAY_HOST:-api-gateway:3000}
+    ports:
+      - "8080:80"
+
 volumes:
   pgdata-registro:
   pgdata-matricula:
