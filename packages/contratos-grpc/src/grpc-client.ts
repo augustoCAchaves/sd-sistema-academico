@@ -44,6 +44,7 @@ export class ClienteGrpc<S> {
     const Construtor = pkg[servico] as grpc.ServiceClientConstructor;
     this.cliente = new Construtor(endereco, grpc.credentials.createInsecure(), {
       'grpc.max_reconnect_backoff_ms': 2000,
+      'grpc.dns_min_time_between_resolutions_ms': 2000,
     });
   }
 
