@@ -4,7 +4,7 @@
 #   subir [vm...]      envia o .env.gcp e sobe o compose de cada VM (padrão: as 3)
 #   reset              volta os bancos ao estado inicial da demo
 #   status | db        containers de cada VM | SELECTs da demo nos dois bancos
-#   logs <vm>          acompanha os logs do serviço da VM
+#   logs <vm>          acompanha os logs do serviço da VM (reconecta se o container reiniciar)
 #   ssh <vm> [cmd]     abre um shell (ou roda cmd na pasta do projeto)
 #   ligar | desligar   liga/desliga as 3 VMs
 # vm: borda | registro | matricula
@@ -92,7 +92,7 @@ case "${1:-}" in
     remoto matricula "cd $DIR && sudo scripts/db.sh matricula" ;;
   logs)
     gcloud compute ssh "$(vm "$2")" --zone "$ZONA" --quiet --ssh-flag=-t \
-      --command "cd $DIR && sudo docker compose logs -f --tail 5 ${LOGS[$2]}" ;;
+      --command "cd $DIR && sudo docker compose logs -f --no-log-prefix --tail 5 ${LOGS[$2]}; while sleep 1; do sudo docker compose logs -f --no-log-prefix --tail 0 ${LOGS[$2]}; done" ;;
   ssh)
     alvo=$2; shift 2
     if [ $# -gt 0 ]; then remoto "$alvo" "cd $DIR && $*"
