@@ -18,11 +18,31 @@ export function exigirPreenchidos(campos: Record<string, string>): void {
   }
 }
 
-const CODIGOS_BANCO_FORA = ['P1001', 'P1002', 'P1017', 'ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN', '57P01'];
+const CODIGOS_BANCO_FORA = [
+  'P1001', 'P1002', 'P1008', 'P1017',
+  'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'ENOTFOUND', 'EAI_AGAIN',
+  '57P01', '57P03', '08001', '08003', '08006',
+];
+const TIPOS_BANCO_FORA = ['DatabaseNotReachable', 'ConnectionClosed', 'SocketTimeout', 'TooManyConnections'];
 
+interface ErroBanco {
+  code?: unknown;
+  message?: unknown;
+  cause?: { code?: unknown };
+  meta?: { driverAdapterError?: { cause?: { kind?: unknown; originalCode?: unknown; code?: unknown } } };
+}
+
+// O adapter-pg do Prisma 7 esconde a causa real em meta.driverAdapterError
+// (o $executeRaw, por exemplo, sempre chega como P2010).
 function bancoIndisponivel(err: unknown): boolean {
-  const e = err as { code?: unknown; cause?: { code?: unknown } } | null;
-  return [e?.code, e?.cause?.code].some((c) => typeof c === 'string' && CODIGOS_BANCO_FORA.includes(c));
+  const e = (err ?? {}) as ErroBanco;
+  const causa = e.meta?.driverAdapterError?.cause;
+  const codigos = [e.code, e.cause?.code, causa?.originalCode, causa?.code];
+  return (
+    codigos.some((c) => typeof c === 'string' && CODIGOS_BANCO_FORA.includes(c)) ||
+    (typeof causa?.kind === 'string' && TIPOS_BANCO_FORA.includes(causa.kind)) ||
+    (typeof e.message === 'string' && /connection terminated|connection closed/i.test(e.message))
+  );
 }
 
 @Catch()
