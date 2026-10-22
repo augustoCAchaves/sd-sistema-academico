@@ -67,7 +67,7 @@ services:
     restart: unless-stopped
     environment:
       PORT: 3000
-      JWT_SECRET: ${JWT_SECRET:-dev-secret-troque-em-producao}
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env (veja o .env.example)}
       APP_PASSWORD: ${APP_PASSWORD:-sd2026}
       REGISTRO_GRPC_URL: ${REGISTRO_GRPC_URL:-registro-service:50052}
       MATRICULA_GRPC_URL: ${MATRICULA_GRPC_URL:-matricula-service:50051}
