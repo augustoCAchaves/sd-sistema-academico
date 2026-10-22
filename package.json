@@ -8,6 +8,7 @@
   },
   "scripts": {
     "db:up": "docker compose up -d postgres-registro postgres-matricula",
+    "dev:frontend": "pnpm --filter @academico/frontend dev",
     "db:psql:registro": "docker compose exec postgres-registro psql -U academico -d registro_db",
     "db:psql:matricula": "docker compose exec postgres-matricula psql -U academico -d matricula_db",
     "seed:registro": "docker compose exec registro-service node dist/seed.js",
