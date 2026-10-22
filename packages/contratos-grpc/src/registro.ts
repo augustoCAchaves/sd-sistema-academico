@@ -57,9 +57,15 @@ export interface ConsultarAlunoRequest {
   matricula_aluno: string;
 }
 
+export interface Disciplina {
+  codigo: string;
+  nome: string;
+}
+
 export interface ConsultarAlunoResponse {
   matricula_aluno: string;
   nome: string;
+  aprovadas: Disciplina[];
 }
 
 export interface RegistroAcademicoService {

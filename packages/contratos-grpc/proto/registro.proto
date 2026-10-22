@@ -73,7 +73,13 @@ message ConsultarAlunoRequest {
   string matricula_aluno = 1;
 }
 
+message Disciplina {
+  string codigo = 1;
+  string nome = 2;
+}
+
 message ConsultarAlunoResponse {
   string matricula_aluno = 1;
   string nome = 2;
+  repeated Disciplina aprovadas = 3;
 }

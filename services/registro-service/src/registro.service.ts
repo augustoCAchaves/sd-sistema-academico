@@ -72,11 +72,18 @@ export class RegistroService {
   }
 
   async consultarAluno(matriculaAluno: string): Promise<ConsultarAlunoResponse> {
-    const aluno = await this.prisma.aluno.findUnique({ where: { matricula: matriculaAluno } });
+    const aluno = await this.prisma.aluno.findUnique({
+      where: { matricula: matriculaAluno },
+      include: { aprovacoes: { include: { disciplina: true }, orderBy: { codigo_disciplina: 'asc' } } },
+    });
     if (!aluno) {
       throw erroGrpc(status.NOT_FOUND, `Aluno nao encontrado: ${matriculaAluno}`);
     }
-    return { matricula_aluno: aluno.matricula, nome: aluno.nome };
+    return {
+      matricula_aluno: aluno.matricula,
+      nome: aluno.nome,
+      aprovadas: aluno.aprovacoes.map((a) => ({ codigo: a.disciplina.codigo, nome: a.disciplina.nome })),
+    };
   }
 
   private async buscarTurma(codigoTurma: string) {
