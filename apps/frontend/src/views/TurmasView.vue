@@ -17,11 +17,14 @@ const carregando = ref(true);
 const falhaLista = ref<FalhaApi | null>(null);
 const enviando = ref<string | null>(null);
 const resultado = ref<Resultado | null>(null);
+const aprovadas = ref<Set<string> | null>(null);
 
 async function carregar(): Promise<void> {
   carregando.value = true;
   try {
-    turmas.value = (await api.turmas()).dados;
+    const [t, h] = await Promise.all([api.turmas(), api.historico().catch(() => null)]);
+    turmas.value = t.dados;
+    aprovadas.value = h && new Set(h.dados.aprovadas.map((d) => d.codigo));
     falhaLista.value = null;
   } catch (e) {
     if (!(e instanceof FalhaApi)) throw e;
@@ -47,6 +50,13 @@ async function solicitar(codigo: string, chave = novoUuid()): Promise<void> {
 
 function podeRetentar(r: Resultado): boolean {
   return !!r.falha && (r.falha.status === 0 || r.falha.status >= 500);
+}
+
+function requisito(codigo: string): { cor: string; marca: string; dica: string } {
+  if (!aprovadas.value) return { cor: '', marca: '', dica: '' };
+  return aprovadas.value.has(codigo)
+    ? { cor: 'verde', marca: '✓', dica: 'Você já foi aprovado' }
+    : { cor: 'vermelho', marca: '✗', dica: 'Você ainda não foi aprovado' };
 }
 
 function ocupacao(t: Turma): string {
@@ -104,7 +114,11 @@ onMounted(carregar);
             <div class="disciplina">{{ t.nome_disciplina }}</div>
           </td>
           <td>
-            <code v-if="t.pre_requisitos.length">{{ t.pre_requisitos.join(', ') }}</code>
+            <template v-if="t.pre_requisitos.length">
+              <span v-for="p in t.pre_requisitos" :key="p" class="badge requisito" :class="requisito(p).cor" :title="requisito(p).dica">
+                {{ requisito(p).marca }} {{ p }}
+              </span>
+            </template>
             <span v-else class="tecnico">nenhum</span>
           </td>
           <td class="vagas">
@@ -131,6 +145,15 @@ onMounted(carregar);
 <style scoped>
 .disciplina {
   margin-top: 2px;
+}
+
+.requisito {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  margin: 2px 4px 2px 0;
+}
+
+.requisito:not(.verde):not(.vermelho) {
+  background: var(--fundo);
 }
 
 .vagas {

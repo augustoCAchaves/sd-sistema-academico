@@ -22,6 +22,12 @@ export interface Matricula {
   solicitada_em: string;
 }
 
+export interface Historico {
+  matricula_aluno: string;
+  nome: string;
+  aprovadas: { codigo: string; nome: string }[];
+}
+
 export interface LoginResposta {
   access_token: string;
   token_type: string;
@@ -91,6 +97,7 @@ export const api = {
   solicitarMatricula: (codigo_turma: string, idempotencyKey: string) =>
     requisitar<Matricula>('POST', '/matriculas', { codigo_turma }, { 'Idempotency-Key': idempotencyKey }),
   minhasMatriculas: () => requisitar<Matricula[]>('GET', '/matriculas'),
+  historico: () => requisitar<Historico>('GET', '/historico'),
 };
 
 // crypto.randomUUID só existe em contexto seguro (HTTPS ou localhost); na VM o acesso é por http://IP.

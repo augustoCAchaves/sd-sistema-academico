@@ -21,6 +21,7 @@ watch(
     <nav>
       <RouterLink to="/turmas">Turmas</RouterLink>
       <RouterLink to="/matriculas">Minhas matrículas</RouterLink>
+      <RouterLink to="/historico">Meu histórico</RouterLink>
     </nav>
     <div class="usuario">
       <span>{{ sessao.aluno.nome }} <small>{{ sessao.aluno.matricula_aluno }}</small></span>

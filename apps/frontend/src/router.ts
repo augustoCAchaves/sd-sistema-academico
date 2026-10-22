@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { sessao } from './sessao';
 import LoginView from './views/LoginView.vue';
+import HistoricoView from './views/HistoricoView.vue';
 import MatriculasView from './views/MatriculasView.vue';
 import TurmasView from './views/TurmasView.vue';
 
@@ -11,6 +12,7 @@ export const router = createRouter({
     { path: '/login', name: 'login', component: LoginView, meta: { publica: true } },
     { path: '/turmas', name: 'turmas', component: TurmasView },
     { path: '/matriculas', name: 'matriculas', component: MatriculasView },
+    { path: '/historico', name: 'historico', component: HistoricoView },
     { path: '/:pathMatch(.*)*', redirect: '/turmas' },
   ],
 });
