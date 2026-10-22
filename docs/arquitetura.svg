@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" font-family="DejaVu Sans, Noto Sans, Arial, sans-serif">
+  <defs>
+    <marker id="seta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#334155"/>
+    </marker>
+    <marker id="seta-grpc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <rect width="1600" height="900" fill="#ffffff"/>
+
+  <!-- Navegador -->
+  <rect x="30" y="330" width="220" height="150" rx="14" fill="#f1f5f9" stroke="#334155" stroke-width="2"/>
+  <text x="140" y="372" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">Navegador</text>
+  <text x="140" y="402" text-anchor="middle" font-size="16" fill="#334155">SPA Vue 3 + Vite</text>
+  <text x="140" y="428" text-anchor="middle" font-size="16" fill="#334155">token JWT na sessão</text>
+  <text x="140" y="454" text-anchor="middle" font-size="14" fill="#64748b">(também curl / .http)</text>
+
+  <!-- GCP -->
+  <rect x="290" y="40" width="1290" height="830" rx="18" fill="#f8fafc" stroke="#94a3b8" stroke-width="2" stroke-dasharray="10 6"/>
+  <text x="315" y="74" font-size="20" font-weight="bold" fill="#475569">Google Cloud Platform · VPC default (10.128.0.0/20) · Docker em cada VM</text>
+
+  <!-- borda-vm -->
+  <rect x="320" y="100" width="480" height="680" rx="14" fill="#eff6ff" stroke="#3b82f6" stroke-width="2"/>
+  <text x="340" y="130" font-size="17" font-weight="bold" fill="#1d4ed8">borda-vm · única parte exposta à internet</text>
+
+  <rect x="350" y="150" width="420" height="110" rx="12" fill="#ffffff" stroke="#3b82f6" stroke-width="2"/>
+  <text x="560" y="188" text-anchor="middle" font-size="21" font-weight="bold" fill="#0f172a">frontend · nginx :80</text>
+  <text x="560" y="216" text-anchor="middle" font-size="16" fill="#334155">serve o build do Vue</text>
+  <text x="560" y="240" text-anchor="middle" font-size="16" fill="#334155">proxy /api → gateway (sem CORS)</text>
+
+  <rect x="350" y="320" width="420" height="430" rx="12" fill="#ffffff" stroke="#3b82f6" stroke-width="2.5"/>
+  <text x="560" y="358" text-anchor="middle" font-size="22" font-weight="bold" fill="#0f172a">api-gateway · NestJS :3000</text>
+  <text x="560" y="384" text-anchor="middle" font-size="15" fill="#64748b">REST/JSON na borda · ponto único de entrada</text>
+  <g font-size="16" fill="#0f172a">
+    <rect x="372" y="404" width="376" height="40" rx="8" fill="#f1f5f9"/>
+    <text x="388" y="430">1 · CorrelationId middleware (log + cid)</text>
+    <rect x="372" y="452" width="376" height="40" rx="8" fill="#fee2e2"/>
+    <text x="388" y="478">2 · JwtAuthGuard (Bearer)  →  <tspan font-weight="bold" fill="#b91c1c">401</tspan></text>
+    <rect x="372" y="500" width="376" height="40" rx="8" fill="#fef3c7"/>
+    <text x="388" y="526">3 · ValidationPipe + DTO  →  <tspan font-weight="bold" fill="#b45309">400</tspan></text>
+    <rect x="372" y="548" width="376" height="40" rx="8" fill="#f1f5f9"/>
+    <text x="388" y="574">4 · Controller + mapper JSON → Protobuf</text>
+    <rect x="372" y="596" width="376" height="40" rx="8" fill="#ede9fe"/>
+    <text x="388" y="622">5 · Cliente gRPC com deadline</text>
+    <rect x="372" y="644" width="376" height="40" rx="8" fill="#dcfce7"/>
+    <text x="388" y="670">6 · Protobuf → JSON  →  <tspan font-weight="bold" fill="#15803d">200 / 201</tspan></text>
+    <text x="388" y="716" font-size="15" fill="#475569">ExceptionFilter: gRPC → HTTP</text>
+    <text x="388" y="736" font-size="15" fill="#475569">404 · 409 · 503 · 504</text>
+  </g>
+
+  <!-- matricula-vm -->
+  <rect x="890" y="100" width="660" height="300" rx="14" fill="#faf5ff" stroke="#7c3aed" stroke-width="2"/>
+  <text x="910" y="130" font-size="17" font-weight="bold" fill="#6d28d9">matricula-vm · rede interna</text>
+  <rect x="915" y="150" width="320" height="200" rx="12" fill="#ffffff" stroke="#7c3aed" stroke-width="2.5"/>
+  <text x="1075" y="190" text-anchor="middle" font-size="21" font-weight="bold" fill="#0f172a">matricula-service</text>
+  <text x="1075" y="218" text-anchor="middle" font-size="16" fill="#334155">NestJS · gRPC :50051</text>
+  <text x="1075" y="252" text-anchor="middle" font-size="15" fill="#475569">SolicitarMatricula</text>
+  <text x="1075" y="274" text-anchor="middle" font-size="15" fill="#475569">ListarMatriculas</text>
+  <text x="1075" y="306" text-anchor="middle" font-size="14" fill="#64748b">idempotência (request_id)</text>
+  <text x="1075" y="328" text-anchor="middle" font-size="14" fill="#64748b">compensação (LiberarVaga)</text>
+
+  <g transform="translate(1330,165)">
+    <path d="M0,20 a90,20 0 0,0 180,0 v130 a90,20 0 0,1 -180,0 z" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+    <ellipse cx="90" cy="20" rx="90" ry="20" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+    <text x="90" y="78" text-anchor="middle" font-size="18" font-weight="bold" fill="#0f172a">PostgreSQL</text>
+    <text x="90" y="104" text-anchor="middle" font-size="16" fill="#334155">matricula_db</text>
+    <text x="90" y="130" text-anchor="middle" font-size="13" fill="#64748b">matriculas</text>
+  </g>
+
+  <!-- registro-vm -->
+  <rect x="890" y="480" width="660" height="300" rx="14" fill="#faf5ff" stroke="#7c3aed" stroke-width="2"/>
+  <text x="910" y="510" font-size="17" font-weight="bold" fill="#6d28d9">registro-vm · rede interna</text>
+  <rect x="915" y="530" width="320" height="200" rx="12" fill="#ffffff" stroke="#7c3aed" stroke-width="2.5"/>
+  <text x="1075" y="570" text-anchor="middle" font-size="21" font-weight="bold" fill="#0f172a">registro-service</text>
+  <text x="1075" y="598" text-anchor="middle" font-size="16" fill="#334155">NestJS · gRPC :50052</text>
+  <text x="1075" y="632" text-anchor="middle" font-size="15" fill="#475569">turmas, vagas, pré-requisitos</text>
+  <text x="1075" y="654" text-anchor="middle" font-size="15" fill="#475569">alunos e aprovações</text>
+  <text x="1075" y="688" text-anchor="middle" font-size="14" fill="#64748b">reserva atômica de vaga</text>
+  <text x="1075" y="710" text-anchor="middle" font-size="14" fill="#64748b">(um único UPDATE)</text>
+
+  <g transform="translate(1330,545)">
+    <path d="M0,20 a90,20 0 0,0 180,0 v130 a90,20 0 0,1 -180,0 z" fill="#ffffff" stroke="#7c3aed" stroke-width="2"/>
+    <ellipse cx="90" cy="20" rx="90" ry="20" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+    <text x="90" y="78" text-anchor="middle" font-size="18" font-weight="bold" fill="#0f172a">PostgreSQL</text>
+    <text x="90" y="104" text-anchor="middle" font-size="16" fill="#334155">registro_db</text>
+    <text x="90" y="130" text-anchor="middle" font-size="13" fill="#64748b">turmas · alunos · ...</text>
+  </g>
+
+  <!-- Setas HTTP -->
+  <path d="M250,380 C300,380 300,205 344,205" fill="none" stroke="#334155" stroke-width="2.5" marker-end="url(#seta)"/>
+  <text x="140" y="520" text-anchor="middle" font-size="16" fill="#334155" font-weight="bold">HTTP · REST/JSON</text>
+  <text x="140" y="542" text-anchor="middle" font-size="15" fill="#334155">Authorization: Bearer</text>
+  <path d="M560,260 L560,314" fill="none" stroke="#334155" stroke-width="2.5" marker-end="url(#seta)"/>
+  <text x="572" y="294" font-size="15" fill="#334155">/api/v1/*</text>
+
+  <!-- Setas gRPC -->
+  <path d="M770,460 C840,460 840,250 909,250" fill="none" stroke="#7c3aed" stroke-width="3" marker-end="url(#seta-grpc)"/>
+  <path d="M770,640 C840,640 840,630 909,630" fill="none" stroke="#7c3aed" stroke-width="3" marker-end="url(#seta-grpc)"/>
+  <text x="790" y="440" font-size="15" font-weight="bold" fill="#6d28d9">gRPC</text>
+  <text x="790" y="616" font-size="15" font-weight="bold" fill="#6d28d9">gRPC</text>
+  <text x="790" y="806" font-size="15" fill="#6d28d9">gRPC = Protobuf binário sobre HTTP/2</text>
+
+  <path d="M1190,350 L1190,524" fill="none" stroke="#7c3aed" stroke-width="3" marker-end="url(#seta-grpc)"/>
+  <rect x="1200" y="408" width="236" height="60" rx="6" fill="#faf5ff"/>
+  <text x="1206" y="428" font-size="14" fill="#6d28d9" font-weight="bold">VerificarPreRequisitos</text>
+  <text x="1206" y="446" font-size="14" fill="#6d28d9" font-weight="bold">ReservarVaga</text>
+  <text x="1206" y="464" font-size="14" fill="#6d28d9" font-weight="bold">LiberarVaga</text>
+
+  <!-- Prisma -->
+  <path d="M1235,250 L1324,250" fill="none" stroke="#334155" stroke-width="2.5" marker-end="url(#seta)"/>
+  <text x="1250" y="240" font-size="14" fill="#334155">Prisma</text>
+  <path d="M1235,630 L1324,630" fill="none" stroke="#334155" stroke-width="2.5" marker-end="url(#seta)"/>
+  <text x="1250" y="620" font-size="14" fill="#334155">Prisma</text>
+
+  <!-- Rodapé -->
+  <text x="320" y="836" font-size="16" fill="#334155"><tspan font-weight="bold">Contrato único:</tspan> packages/contratos-grpc (registro.proto · matricula.proto)</text>
+  <text x="320" y="858" font-size="16" fill="#334155"><tspan font-weight="bold">Um banco por serviço</tspan> · deadline em toda chamada gRPC · portas gRPC liberadas só para a sub-rede</text>
+</svg>
