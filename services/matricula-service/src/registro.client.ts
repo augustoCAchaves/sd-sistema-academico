@@ -44,7 +44,7 @@ export class RegistroClient implements OnModuleDestroy {
       if (!ehErroGrpc(err)) {
         throw err;
       }
-      if (err.code === status.UNAVAILABLE) {
+      if (err.code === status.UNAVAILABLE && !err.details.startsWith('Banco de dados')) {
         throw erroGrpc(status.UNAVAILABLE, 'Registro academico indisponivel');
       }
       if (err.code === status.DEADLINE_EXCEEDED) {

@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Matricula, SolicitarMatriculaRequest, SolicitarMatriculaResponse, status } from '@academico/contratos-grpc';
 import { Injectable } from '@nestjs/common';
+import { RpcException } from '@nestjs/microservices';
 import { erroGrpc } from './erros';
 import { Matricula as LinhaMatricula, StatusMatricula } from './generated/prisma/client';
 import { log } from './log';
@@ -60,7 +61,12 @@ export class MatriculasService {
       }, cid);
     }
 
-    const reserva = await this.registro.reservarVaga(base.codigo_turma, cid);
+    const reserva = await this.registro.reservarVaga(base.codigo_turma, cid).catch((err: unknown) => {
+      if (err instanceof RpcException && (err.getError() as { code?: unknown }).code === status.DEADLINE_EXCEEDED) {
+        log(`!! cid=${cid} ReservarVaga estourou o prazo: a vaga de ${base.codigo_turma} pode ter sido ocupada sem matricula`);
+      }
+      throw err;
+    });
     if (!reserva.reservada) {
       return this.gravar({
         ...base,
