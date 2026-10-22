@@ -295,21 +295,21 @@ Só muda quais serviços cada VM sobe e quais portas ela publica.
 
 | VM | IP interno | Containers | Entrada permitida (firewall) |
 |---|---|---|---|
-| `t2-borda` | `10.128.0.10` | `api-gateway` + `frontend` | tcp:80 e tcp:3000 da internet (`t2-borda-web`) |
-| `t2-registro` | `10.128.0.11` | `postgres-registro` + `registro-service` | tcp:50052 só da sub-rede `10.128.0.0/20` (`t2-grpc-interno`) |
-| `t2-matricula` | `10.128.0.12` | `postgres-matricula` + `matricula-service` | tcp:50051 só da sub-rede `10.128.0.0/20` (`t2-grpc-interno`) |
+| `borda-vm` | `10.128.0.10` | `api-gateway` + `frontend` | tcp:80 e tcp:3000 da internet (`t2-borda-web`) |
+| `registro-vm` | `10.128.0.11` | `postgres-registro` + `registro-service` | tcp:50052 só da sub-rede `10.128.0.0/20` (`t2-grpc-interno`) |
+| `matricula-vm` | `10.128.0.12` | `postgres-matricula` + `matricula-service` | tcp:50051 só da sub-rede `10.128.0.0/20` (`t2-grpc-interno`) |
 
 ```
- navegador ──HTTP :80──▶ t2-borda (IP externo fixo)
+ navegador ──HTTP :80──▶ borda-vm (IP externo fixo)
                            nginx ──/api──▶ api-gateway
-                                            ├──gRPC 10.128.0.11:50052──▶ t2-registro  ─▶ registro_db
-                                            └──gRPC 10.128.0.12:50051──▶ t2-matricula ─▶ matricula_db
-                                                                            └──gRPC 10.128.0.11:50052──▶ t2-registro
+                                            ├──gRPC 10.128.0.11:50052──▶ registro-vm  ─▶ registro_db
+                                            └──gRPC 10.128.0.12:50051──▶ matricula-vm ─▶ matricula_db
+                                                                            └──gRPC 10.128.0.11:50052──▶ registro-vm
 ```
 
 - **IP interno vs. externo.** VM ↔ VM usa o IP interno, fixado na criação
   (`--private-network-ip`). Por isso o `.env` já nasce com os endereços certos.
-  O navegador usa o IP externo da `t2-borda`, que é **reservado**
+  O navegador usa o IP externo da `borda-vm`, que é **reservado**
   (`t2-borda-ip`) e não muda com stop/start.
 - **Um `.env` para as três VMs** (`.env.gcp`, gerado pelo script e fora do
   git). Ele traz `COMPOSE_FILE=docker-compose.yml:docker-compose.gcp.yml`,

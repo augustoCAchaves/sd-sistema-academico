@@ -19,9 +19,9 @@ declare -A IP=([borda]=10.128.0.10 [registro]=10.128.0.11 [matricula]=10.128.0.1
 declare -A SERVICOS=([borda]="api-gateway frontend" [registro]=registro-service [matricula]=matricula-service)
 declare -A LOGS=([borda]=api-gateway [registro]=registro-service [matricula]=matricula-service)
 
-vm() { echo "t2-$1"; }
+vm() { echo "$1-vm"; }
 remoto() { local alvo=$1; shift; gcloud compute ssh "$(vm "$alvo")" --zone "$ZONA" --quiet --command "$*"; }
-ip_externo() { gcloud compute instances describe t2-borda --zone "$ZONA" --format='value(networkInterfaces[0].accessConfigs[0].natIP)'; }
+ip_externo() { gcloud compute instances describe borda-vm --zone "$ZONA" --format='value(networkInterfaces[0].accessConfigs[0].natIP)'; }
 
 gerar_env() {
   [ -f .env.gcp ] && return
@@ -97,7 +97,7 @@ case "${1:-}" in
     alvo=$2; shift 2
     if [ $# -gt 0 ]; then remoto "$alvo" "cd $DIR && $*"
     else gcloud compute ssh "$(vm "$alvo")" --zone "$ZONA"; fi ;;
-  ligar) gcloud compute instances start t2-registro t2-matricula t2-borda --zone "$ZONA" ;;
-  desligar) gcloud compute instances stop t2-borda t2-matricula t2-registro --zone "$ZONA" ;;
+  ligar) gcloud compute instances start registro-vm matricula-vm borda-vm --zone "$ZONA" ;;
+  desligar) gcloud compute instances stop borda-vm matricula-vm registro-vm --zone "$ZONA" ;;
   *) sed -n '2,10p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac
