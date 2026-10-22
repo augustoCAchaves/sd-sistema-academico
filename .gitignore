@@ -10,3 +10,4 @@ dist/
 CLAUDE.md
 docs/PLANO.md
 docs/estudo/
+.env.gcp

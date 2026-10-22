@@ -1,0 +1,13 @@
+# Nas VMs: COMPOSE_FILE=docker-compose.yml:docker-compose.gcp.yml no .env (ver scripts/gcp.sh).
+services:
+  registro-service:
+    ports:
+      - "50052:50052"
+
+  matricula-service:
+    ports:
+      - "50051:50051"
+
+  frontend:
+    ports: !override
+      - "80:80"
