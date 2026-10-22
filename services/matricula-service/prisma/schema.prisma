@@ -1,0 +1,31 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum StatusMatricula {
+  DEFERIDA
+  INDEFERIDA_SEM_VAGA
+  INDEFERIDA_PRE_REQUISITO
+
+  @@map("status_matricula")
+}
+
+model Matricula {
+  protocolo       String          @id @default(uuid()) @db.Uuid
+  request_id      String          @unique
+  matricula_aluno String
+  codigo_turma    String
+  status          StatusMatricula
+  mensagem        String
+  pendencias      String[]
+  solicitada_em   DateTime        @default(now()) @db.Timestamptz(3)
+
+  @@index([matricula_aluno])
+  @@map("matriculas")
+}
