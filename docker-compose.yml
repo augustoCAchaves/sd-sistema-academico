@@ -60,6 +60,21 @@ services:
       postgres-matricula:
         condition: service_healthy
 
+  api-gateway:
+    build:
+      context: .
+      dockerfile: apps/api-gateway/Dockerfile
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-troque-em-producao}
+      APP_PASSWORD: ${APP_PASSWORD:-sd2026}
+      REGISTRO_GRPC_URL: ${REGISTRO_GRPC_URL:-registro-service:50052}
+      MATRICULA_GRPC_URL: ${MATRICULA_GRPC_URL:-matricula-service:50051}
+      GRPC_DEADLINE_MS: 8000
+    ports:
+      - "3000:3000"
+
 volumes:
   pgdata-registro:
   pgdata-matricula:
