@@ -4,3 +4,6 @@
 **/.env
 .git
 docs
+**/*.md
+postman
+scripts
