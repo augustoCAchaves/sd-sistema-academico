@@ -1,0 +1,58 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Aluno {
+  matricula  String      @id
+  nome       String
+  aprovacoes Aprovacao[]
+
+  @@map("alunos")
+}
+
+model Disciplina {
+  codigo         String         @id
+  nome           String
+  turmas         Turma[]
+  pre_requisitos PreRequisito[] @relation("disciplina")
+  requisito_de   PreRequisito[] @relation("pre_requisito")
+  aprovacoes     Aprovacao[]
+
+  @@map("disciplinas")
+}
+
+model Turma {
+  codigo            String     @id
+  codigo_disciplina String
+  vagas_totais      Int
+  vagas_ocupadas    Int        @default(0)
+  disciplina        Disciplina @relation(fields: [codigo_disciplina], references: [codigo])
+
+  @@map("turmas")
+}
+
+model PreRequisito {
+  codigo_disciplina    String
+  codigo_pre_requisito String
+  disciplina           Disciplina @relation("disciplina", fields: [codigo_disciplina], references: [codigo])
+  pre_requisito        Disciplina @relation("pre_requisito", fields: [codigo_pre_requisito], references: [codigo])
+
+  @@id([codigo_disciplina, codigo_pre_requisito])
+  @@map("pre_requisitos")
+}
+
+model Aprovacao {
+  matricula_aluno   String
+  codigo_disciplina String
+  aluno             Aluno      @relation(fields: [matricula_aluno], references: [matricula])
+  disciplina        Disciplina @relation(fields: [codigo_disciplina], references: [codigo])
+
+  @@id([matricula_aluno, codigo_disciplina])
+  @@map("aprovacoes")
+}
