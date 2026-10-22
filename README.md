@@ -211,12 +211,15 @@ acrescenta uma turma quase lotada:
 | `scripts/reset-demo.sh` | Volta os dois bancos ao estado inicial (`pnpm reset-demo`) |
 | `scripts/demo-curl.sh [URL]` | Bateria de 16 passos com status esperado: 401, 401, 401, 200, 200, 400, 400, 401, 201, 201, 409, 201, 201, 404, 200 e, por fim, o registro parado (503/504). Sem URL, roda local e reseta os bancos |
 | `postman/sd-sistema-academico.postman_collection.json` | A mesma bateria no Postman, com testes por requisição. Roda também via Newman: `newman run postman/*.json` |
+| `scripts/concorrencia.sh [URL]` | 10 alunos disputam ao mesmo tempo a **última vaga** da `SO-2026-1`: exatamente 1 DEFERIDA, 9 INDEFERIDA_SEM_VAGA, turma em 30/30 |
+| `scripts/db.sh [registro\|matricula]` | Os SELECTs da demo (vagas por turma, matrículas gravadas) nos bancos que rodam naquele host |
 | `scripts/grpc.sh <registro\|matricula> <Metodo> [json]` | Chama os serviços gRPC **por dentro** da rede do compose (grpcurl em container), sem passar pelo gateway |
 | `pnpm db:psql:registro` / `pnpm db:psql:matricula` | `psql` dentro de cada banco |
 
-**Ver a persistência no banco.** As portas dos bancos são publicadas só em
-`127.0.0.1`, para inspeção: `5432` para o `registro_db` e `5433` para o
-`matricula_db`, com usuário e senha do `.env`. Exemplo:
+**Ver a persistência no banco.** Use `scripts/db.sh` ou um cliente SQL. As
+portas dos bancos são publicadas só em `127.0.0.1`, para inspeção: `5432` para
+o `registro_db` e `5433` para o `matricula_db`, com usuário e senha do `.env`.
+Exemplo:
 
 ```sql
 -- registro_db: a vaga ocupada incrementou
@@ -373,7 +376,7 @@ services/registro-service/   # turmas, vagas, pré-requisitos, alunos (Prisma �
 services/matricula-service/  # solicitação e registro de matrículas (Prisma → matricula_db)
 apps/api-gateway/            # REST: JWT, validação, tradução JSON ↔ Protobuf, erros gRPC → HTTP
 apps/frontend/               # Vue 3 + Vite, servido por nginx com proxy de /api
-scripts/                     # reset da demo, bateria curl, grpcurl
+scripts/                     # reset da demo, bateria curl, concorrência, consultas ao banco, grpcurl
 postman/                     # coleção da bateria da demo
 docs/                        # imagem da arquitetura
 docker-compose.yml           # sobe tudo localmente
