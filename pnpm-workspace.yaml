@@ -3,4 +3,6 @@ packages:
   - apps/*
   - services/*
 allowBuilds:
+  '@prisma/engines': true
+  prisma: true
   protobufjs: false
