@@ -33,6 +33,18 @@ services:
       timeout: 3s
       retries: 10
 
+  registro-service:
+    build:
+      context: .
+      dockerfile: services/registro-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-academico}:${POSTGRES_PASSWORD:-academico}@postgres-registro:5432/registro_db
+      GRPC_PORT: 50052
+    depends_on:
+      postgres-registro:
+        condition: service_healthy
+
 volumes:
   pgdata-registro:
   pgdata-matricula:
