@@ -45,6 +45,19 @@ services:
       postgres-registro:
         condition: service_healthy
 
+  matricula-service:
+    build:
+      context: .
+      dockerfile: services/matricula-service/Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-academico}:${POSTGRES_PASSWORD:-academico}@postgres-matricula:5432/matricula_db
+      GRPC_PORT: 50051
+      REGISTRO_GRPC_URL: ${REGISTRO_GRPC_URL:-registro-service:50052}
+    depends_on:
+      postgres-matricula:
+        condition: service_healthy
+
 volumes:
   pgdata-registro:
   pgdata-matricula:
