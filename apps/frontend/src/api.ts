@@ -1,6 +1,8 @@
 import { type AlunoLogado, encerrarSessao, sessao } from './sessao';
 
 const BASE = '/api/v1';
+// Acima da deadline do gateway (8 s): até lá, quem responde é ele, com 504.
+const TEMPO_LIMITE_MS = 10_000;
 
 export interface Turma {
   codigo_turma: string;
@@ -68,9 +70,13 @@ async function requisitar<T>(metodo: string, caminho: string, corpo?: unknown, h
       method: metodo,
       headers: { 'Content-Type': 'application/json', ...autorizacao, ...headers },
       body: corpo === undefined ? undefined : JSON.stringify(corpo),
+      signal: AbortSignal.timeout(TEMPO_LIMITE_MS),
     });
-  } catch {
-    throw new FalhaApi({ status: 0, erro: 'SEM_CONEXAO', mensagem: 'Não foi possível falar com o API Gateway.', detalhes: [], correlation_id: '-' });
+  } catch (e) {
+    const mensagem = e instanceof DOMException && e.name === 'TimeoutError'
+      ? `O servidor não respondeu em ${TEMPO_LIMITE_MS / 1000} s.`
+      : 'Não foi possível falar com o API Gateway.';
+    throw new FalhaApi({ status: 0, erro: 'SEM_CONEXAO', mensagem, detalhes: [], correlation_id: '-' });
   }
 
   const cid = resp.headers.get('x-correlation-id') ?? '-';
