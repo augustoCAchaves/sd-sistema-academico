@@ -25,8 +25,8 @@ export interface OpcoesChamada {
   correlationId?: string;
 }
 
-type Requisicao<F> = F extends (req: infer R) => unknown ? R : never;
-type Resposta<F> = F extends (...args: never[]) => Promise<infer R> ? R : never;
+export type Requisicao<F> = F extends (req: infer R) => unknown ? R : never;
+export type Resposta<F> = F extends (...args: never[]) => Promise<infer R> ? R : never;
 
 type MetodoUnario = (
   req: unknown,
