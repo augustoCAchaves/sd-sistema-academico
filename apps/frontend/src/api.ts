@@ -79,6 +79,9 @@ async function requisitar<T>(metodo: string, caminho: string, corpo?: unknown, h
     throw new FalhaApi(erro);
   }
 
+  if (dados === null) {
+    throw new FalhaApi({ status: resp.status, erro: 'RESPOSTA_INVALIDA', mensagem: 'A resposta não veio do gateway (corpo sem JSON).', detalhes: [], correlation_id: cid });
+  }
   return { status: resp.status, dados: dados as T, cid };
 }
 

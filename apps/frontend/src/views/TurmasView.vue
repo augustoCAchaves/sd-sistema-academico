@@ -57,11 +57,16 @@ onMounted(carregar);
 </script>
 
 <template>
-  <h1>Turmas abertas</h1>
-  <p class="subtitulo">Vagas e pré-requisitos vêm do registro-service; a solicitação passa pelo matricula-service.</p>
+  <div class="cabecalho">
+    <div>
+      <h1>Turmas abertas</h1>
+      <p class="subtitulo">Vagas e pré-requisitos vêm do registro-service; a solicitação passa pelo matricula-service.</p>
+    </div>
+    <button class="secundario" :disabled="carregando" @click="carregar">Atualizar</button>
+  </div>
 
   <template v-if="resultado">
-    <div v-if="resultado.resposta" class="alerta" :class="resultado.resposta.dados.status === 'DEFERIDA' ? 'verde' : 'amarelo'">
+    <div v-if="resultado.resposta" class="alerta" role="alert" :class="resultado.resposta.dados.status === 'DEFERIDA' ? 'verde' : 'amarelo'">
       <strong>{{ resultado.resposta.status }}</strong> · {{ resultado.codigo }}
       <StatusBadge :status="resultado.resposta.dados.status" /> · {{ resultado.resposta.dados.mensagem }}
       <ul v-if="resultado.resposta.dados.pendencias.length">
@@ -110,12 +115,12 @@ onMounted(carregar);
             <div class="barra"><div :style="{ width: ocupacao(t) }"></div></div>
           </td>
           <td class="acao">
-            <button :disabled="!!enviando" @click="solicitar(t.codigo_turma)">
+            <button :disabled="!!enviando" :aria-label="`Solicitar matrícula em ${t.codigo_turma}`" @click="solicitar(t.codigo_turma)">
               {{ enviando === t.codigo_turma ? 'Enviando…' : 'Solicitar' }}
             </button>
           </td>
         </tr>
-        <tr v-if="!turmas.length">
+        <tr v-if="!turmas.length && !falhaLista">
           <td colspan="4" class="vazio">{{ carregando ? 'Carregando turmas…' : 'Nenhuma turma encontrada.' }}</td>
         </tr>
       </tbody>

@@ -60,19 +60,10 @@ onMounted(carregar);
           <td>{{ formatoData.format(new Date(m.solicitada_em)) }}</td>
           <td><code :title="m.protocolo">{{ m.protocolo.slice(0, 8) }}</code></td>
         </tr>
-        <tr v-if="!matriculas.length">
+        <tr v-if="!matriculas.length && !falha">
           <td colspan="5" class="vazio">{{ carregando ? 'Carregando…' : 'Nenhuma solicitação ainda.' }}</td>
         </tr>
       </tbody>
     </table>
   </div>
 </template>
-
-<style scoped>
-.cabecalho {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-}
-</style>

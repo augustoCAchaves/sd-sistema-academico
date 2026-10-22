@@ -5,7 +5,7 @@ defineProps<{ falha: FalhaApi }>();
 </script>
 
 <template>
-  <div class="alerta vermelho">
+  <div class="alerta vermelho" role="alert">
     <strong>{{ falha.status || 'Sem conexão' }}</strong> · {{ falha.message }}
     <ul v-if="falha.corpo.detalhes.length">
       <li v-for="d in falha.corpo.detalhes" :key="d">{{ d }}</li>
