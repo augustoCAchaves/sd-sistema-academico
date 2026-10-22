@@ -50,20 +50,25 @@ export class RegistroService {
 
     // Um único UPDATE: o Postgres trava a linha e reavalia o WHERE. Com duas
     // requisições simultâneas pela última vaga, só uma afeta 1 linha.
-    const linhas = await this.prisma.$executeRaw`
+    const reservada = await this.prisma.$queryRaw<{ disponiveis: number }[]>`
       UPDATE turmas SET vagas_ocupadas = vagas_ocupadas + 1
-       WHERE codigo = ${codigoTurma} AND vagas_ocupadas < vagas_totais`;
+       WHERE codigo = ${codigoTurma} AND vagas_ocupadas < vagas_totais
+      RETURNING vagas_totais - vagas_ocupadas AS disponiveis`;
 
-    return { reservada: linhas === 1, vagas_disponiveis: await this.vagasDisponiveis(codigoTurma) };
+    if (reservada.length === 1) {
+      return { reservada: true, vagas_disponiveis: reservada[0].disponiveis };
+    }
+    return { reservada: false, vagas_disponiveis: await this.vagasDisponiveis(codigoTurma) };
   }
 
   async liberarVaga(codigoTurma: string): Promise<LiberarVagaResponse> {
     await this.buscarTurma(codigoTurma);
-    await this.prisma.$executeRaw`
+    const liberada = await this.prisma.$queryRaw<{ disponiveis: number }[]>`
       UPDATE turmas SET vagas_ocupadas = vagas_ocupadas - 1
-       WHERE codigo = ${codigoTurma} AND vagas_ocupadas > 0`;
+       WHERE codigo = ${codigoTurma} AND vagas_ocupadas > 0
+      RETURNING vagas_totais - vagas_ocupadas AS disponiveis`;
 
-    return { vagas_disponiveis: await this.vagasDisponiveis(codigoTurma) };
+    return { vagas_disponiveis: liberada[0]?.disponiveis ?? (await this.vagasDisponiveis(codigoTurma)) };
   }
 
   async consultarAluno(matriculaAluno: string): Promise<ConsultarAlunoResponse> {
