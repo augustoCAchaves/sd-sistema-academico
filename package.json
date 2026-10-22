@@ -12,6 +12,7 @@
     "db:psql:matricula": "docker compose exec postgres-matricula psql -U academico -d matricula_db",
     "seed:registro": "docker compose exec registro-service node dist/seed.js",
     "grpc": "scripts/grpc.sh",
-    "limpar:matricula": "docker compose exec matricula-service node dist/limpar.js"
+    "limpar:matricula": "docker compose exec matricula-service node dist/limpar.js",
+    "reset-demo": "scripts/reset-demo.sh"
   }
 }

@@ -1,3 +1,5 @@
+name: sd-sistema-academico
+
 services:
   postgres-registro:
     image: postgres:17
