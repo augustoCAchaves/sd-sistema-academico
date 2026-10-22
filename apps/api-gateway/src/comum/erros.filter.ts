@@ -16,6 +16,15 @@ const GRPC_PARA_HTTP: Partial<Record<status, HttpStatus>> = {
   [status.DEADLINE_EXCEEDED]: HttpStatus.GATEWAY_TIMEOUT,
 };
 
+const MENSAGEM_5XX: Partial<Record<HttpStatus, string>> = {
+  [HttpStatus.SERVICE_UNAVAILABLE]: 'Serviço interno indisponível. Tente novamente em instantes.',
+  [HttpStatus.GATEWAY_TIMEOUT]: 'O serviço interno não respondeu no prazo.',
+  [HttpStatus.INTERNAL_SERVER_ERROR]: 'Erro interno ao processar a requisição.',
+};
+
+// Mensagens técnicas do grpc-js (com IP e porta internos) não vão para o cliente.
+const DETALHE_TECNICO = /No connection established|Deadline exceeded|Name resolution|LB pick|Connection dropped|ECONNREFUSED/;
+
 interface CorpoErro {
   status: number;
   erro: string;
@@ -49,13 +58,23 @@ export class ErrosFilter implements ExceptionFilter {
       if (Array.isArray(mensagem)) {
         return montar(err.getStatus(), 'Dados inválidos.', mensagem);
       }
+      if (err.getStatus() === HttpStatus.BAD_REQUEST && /JSON/.test(mensagem ?? '')) {
+        return montar(HttpStatus.BAD_REQUEST, 'JSON malformado no corpo da requisição.');
+      }
       return montar(err.getStatus(), mensagem ?? err.message);
     }
 
     if (ehErroGrpc(err)) {
       const s = GRPC_PARA_HTTP[err.code] ?? HttpStatus.INTERNAL_SERVER_ERROR;
       log(`    gRPC <== ${status[err.code]} cid=${cid} -> HTTP ${s}: ${err.details}`);
-      return montar(s, err.details);
+      const tecnico = s >= 500 && (DETALHE_TECNICO.test(err.details) || !err.details);
+      return montar(s, tecnico ? (MENSAGEM_5XX[s] ?? MENSAGEM_5XX[500]!) : err.details);
+    }
+
+    // Erros do body parser do Express (corpo grande demais, encoding inválido...).
+    const httpStatus = (err as { status?: unknown }).status;
+    if (typeof httpStatus === 'number' && httpStatus >= 400 && httpStatus < 500) {
+      return montar(httpStatus, httpStatus === 413 ? 'Corpo da requisição grande demais.' : 'Requisição inválida.');
     }
 
     log(`ERRO inesperado cid=${cid}: ${err instanceof Error ? err.stack : String(err)}`);
