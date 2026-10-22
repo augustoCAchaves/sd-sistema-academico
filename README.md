@@ -289,24 +289,74 @@ Dentro dos containers também existem `GRPC_DEADLINE_MS` (gateway, 8000),
 
 ## 9. Deploy no Google Cloud
 
-A topologia segue a proposta do professor, com cada serviço na sua própria VM:
+Cada componente roda na sua própria VM (`e2-medium`, Debian 12, zona
+`us-central1-a`). Os containers e as imagens são os mesmos do compose local.
+Só muda quais serviços cada VM sobe e quais portas ela publica.
 
-| VM | Containers | Portas liberadas no firewall |
-|---|---|---|
-| `registro-vm` | `postgres-registro` + `registro-service` | tcp:50052 só da sub-rede interna (`10.128.0.0/20`) |
-| `matricula-vm` | `postgres-matricula` + `matricula-service` | tcp:50051 só da sub-rede interna |
-| `borda-vm` | `api-gateway` + `frontend` | tcp:80 e tcp:3000 da internet |
+| VM | IP interno | Containers | Entrada permitida (firewall) |
+|---|---|---|---|
+| `t2-borda` | `10.128.0.10` | `api-gateway` + `frontend` | tcp:80 e tcp:3000 da internet (`t2-borda-web`) |
+| `t2-registro` | `10.128.0.11` | `postgres-registro` + `registro-service` | tcp:50052 só da sub-rede `10.128.0.0/20` (`t2-grpc-interno`) |
+| `t2-matricula` | `10.128.0.12` | `postgres-matricula` + `matricula-service` | tcp:50051 só da sub-rede `10.128.0.0/20` (`t2-grpc-interno`) |
 
-- VM ↔ VM usa o **IP interno** (`10.128.0.x`), definido no `.env` de cada VM.
-  O navegador usa o **IP externo** da `borda-vm`, que muda a cada stop/start.
-- Cada VM faz `git clone`, cria o `.env` e roda `docker compose up -d --build`
-  com os serviços daquela VM. O `restart: unless-stopped` mantém os containers
-  vivos depois de fechar o SSH e de um reboot.
-- **Plano B:** o mesmo `docker-compose.yml` numa única VM roda o sistema ponta
-  a ponta.
+```
+ navegador ──HTTP :80──▶ t2-borda (IP externo fixo)
+                           nginx ──/api──▶ api-gateway
+                                            ├──gRPC 10.128.0.11:50052──▶ t2-registro  ─▶ registro_db
+                                            └──gRPC 10.128.0.12:50051──▶ t2-matricula ─▶ matricula_db
+                                                                            └──gRPC 10.128.0.11:50052──▶ t2-registro
+```
 
-> As instruções passo a passo do deploy serão detalhadas nesta seção junto com
-> o compose de cada VM.
+- **IP interno vs. externo.** VM ↔ VM usa o IP interno, fixado na criação
+  (`--private-network-ip`). Por isso o `.env` já nasce com os endereços certos.
+  O navegador usa o IP externo da `t2-borda`, que é **reservado**
+  (`t2-borda-ip`) e não muda com stop/start.
+- **Um `.env` para as três VMs** (`.env.gcp`, gerado pelo script e fora do
+  git). Ele traz `COMPOSE_FILE=docker-compose.yml:docker-compose.gcp.yml`,
+  então todo `docker compose` na VM já aplica o override
+  [`docker-compose.gcp.yml`](docker-compose.gcp.yml). O override publica as
+  portas gRPC, que as outras VMs precisam alcançar, e troca o frontend de
+  `8080` para `80`.
+- **As portas gRPC não são alcançáveis da internet.** As VMs de serviço têm IP
+  externo só para baixar o Docker e clonar o repositório.
+- O `restart: unless-stopped` mantém os containers vivos depois de fechar o
+  SSH e de um reboot da VM.
+
+### Passo a passo
+
+Pré-requisito: `gcloud auth login` e o projeto configurado (`gcloud config set project <ID>`).
+
+```bash
+scripts/gcp.sh criar     # firewall, IP externo fixo e as 3 VMs; o startup script instala Docker e clona o repo
+scripts/gcp.sh subir     # gera o .env.gcp, envia para cada VM e roda `docker compose up -d --build` (registro → matrícula → borda)
+scripts/gcp.sh reset     # seed do registro_db e limpeza do matricula_db
+scripts/gcp.sh status    # containers de cada VM + URL pública
+```
+
+Depois disso, a mesma bateria local roda contra a nuvem:
+
+```bash
+scripts/demo-curl.sh http://<IP-EXTERNO>          # 15 passos, sem o 503
+scripts/concorrencia.sh http://<IP-EXTERNO>       # 1 DEFERIDA, 9 SEM_VAGA entre VMs
+newman run postman/*.json --env-var baseUrl=http://<IP-EXTERNO>/api/v1
+```
+
+| Comando | Para quê |
+|---|---|
+| `scripts/gcp.sh logs <borda\|registro\|matricula>` | Acompanha o log do serviço daquela VM (um terminal por VM na demo) |
+| `scripts/gcp.sh db` | Os SELECTs da demo, cada um na VM do seu banco |
+| `scripts/gcp.sh ssh registro 'sudo docker compose stop registro-service'` | Derruba o registro para mostrar o **503** (`start` para religar; volta em ~5 s) |
+| `scripts/gcp.sh subir borda` | Redeploy de uma VM só (faz `git pull` e rebuild) |
+| `scripts/gcp.sh desligar` / `ligar` | Para as VMs e o custo de CPU; os dados ficam nos volumes |
+
+> **Use a porta 80 também para o Postman e o curl.** O nginx encaminha `/api`
+> ao gateway, então `http://<IP-EXTERNO>/api/v1` é o mesmo gateway da porta
+> 3000. Redes institucionais, como a da UFG, bloqueiam a saída para portas
+> não padrão. A 3000 funciona de outras redes, mas dá timeout de dentro do
+> campus.
+
+**Plano B:** numa única VM, `docker compose up -d --build` sem o override
+roda o sistema ponta a ponta (frontend na 8080).
 
 ---
 
@@ -321,6 +371,7 @@ A topologia segue a proposta do professor, com cada serviço na sua própria VM:
 | Registro parado devolve **504**, e não 503 | No compose local, o container parado sai do DNS do Docker e a chamada espera a deadline. Em VMs, a porta fechada recusa a conexão: 503 | Esperado. Os dois códigos significam "serviço interno fora do ar, sem travar" |
 | Frontend mostra "Falha HTTP 502/504 antes de chegar ao gateway" | O nginx não alcançou o gateway | `docker compose ps api-gateway` e `docker compose logs api-gateway` |
 | Primeiras chamadas logo após `start` dão 503 | O serviço ainda está aplicando as migrations | Aguarde alguns segundos. O canal gRPC reconecta sozinho |
+| Timeout no `IP:3000` a partir da UFG, mas a porta 80 funciona | A rede local bloqueia a saída para a porta 3000. O firewall do GCP está certo (de dentro do GCP, a 3000 responde) | Use `http://IP/api/v1`, pelo nginx |
 | Funciona local, falha entre VMs | `.env` com nome do compose em vez do IP interno, ou firewall | Teste: `timeout 5 bash -c "cat < /dev/null > /dev/tcp/<IP>/<PORTA>"; echo $?` (0 = aberta, 124 = bloqueada) |
 
 ---
