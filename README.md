@@ -33,7 +33,7 @@ a vaga de forma atômica e grava o resultado, deferido ou indeferido.
 
 | Componente | Tecnologia | Porta | Responsabilidade |
 |---|---|---|---|
-| `apps/frontend` | Vue 3 + Vite + TS, servido por nginx | 8080 (publicada) | Telas de login, turmas e minhas matrículas. Fala **só** com o gateway |
+| `apps/frontend` | Vue 3 + Vite + TS, servido por nginx | 8080 (publicada) | Telas de login, turmas (com os pré-requisitos marcados como cumpridos ou pendentes), minhas matrículas e meu histórico. Fala **só** com o gateway |
 | `apps/api-gateway` | NestJS 12 (REST) | 3000 (publicada) | Ponto único de entrada: autentica (JWT), valida, traduz JSON ↔ Protobuf, orquestra e mapeia erros |
 | `services/registro-service` | NestJS + gRPC + Prisma | 50052 (interna) | Turmas, vagas (reserva atômica), pré-requisitos, histórico e alunos |
 | `services/matricula-service` | NestJS + gRPC + Prisma | 50051 (interna) | Decide e grava matrículas; é servidor do gateway e cliente do registro |
@@ -83,7 +83,7 @@ está marcado com `// T2` no `.proto`.
 
 | Contrato | Do T1 (inalterado) | Acrescentado no T2 |
 |---|---|---|
-| `registro.proto` | `ConsultarVagas`, `VerificarPreRequisitos` | `ListarTurmas`, `ReservarVaga`, `LiberarVaga`, `ConsultarAluno`; campo `pre_requisitos = 6` |
+| `registro.proto` | `ConsultarVagas`, `VerificarPreRequisitos` | `ListarTurmas`, `ReservarVaga`, `LiberarVaga`, `ConsultarAluno`; campo `pre_requisitos = 6`; depois, `aprovadas = 3` no `ConsultarAlunoResponse` (mensagem nova `Disciplina`) |
 | `matricula.proto` | `SolicitarMatricula`, enum `StatusMatricula` | `ListarMatriculas`; campos `request_id = 3` (idempotência), `codigo_turma = 5`, `solicitada_em = 6` |
 
 Os contratos são carregados **em runtime** pelo `@grpc/proto-loader`
@@ -104,6 +104,7 @@ Base: `/api/v1`. Todas as rotas, exceto as marcadas como públicas, exigem
 | `GET /turmas/:codigo` | JWT | `registro.ConsultarVagas` | 200 | 400, 401, 404 |
 | `POST /matriculas` | JWT | `matricula.SolicitarMatricula` | **201** | 400, 401, 404, 409, 503/504 |
 | `GET /matriculas` | JWT | `matricula.ListarMatriculas` (do aluno do token) | 200 | 401 |
+| `GET /historico` | JWT | `registro.ConsultarAluno` (disciplinas aprovadas do aluno do token) | 200 | 401 |
 | `GET /health` | pública | — | 200 | — |
 
 - `POST /matriculas` recebe só `{"codigo_turma": "SD-2026-1"}`. **O aluno vem
@@ -210,7 +211,7 @@ acrescenta uma turma quase lotada:
 |---|---|
 | `scripts/reset-demo.sh` | Volta os dois bancos ao estado inicial (`pnpm reset-demo`) |
 | `scripts/demo-curl.sh [URL]` | Bateria de 16 passos com status esperado: 401, 401, 401, 200, 200, 400, 400, 401, 201, 201, 409, 201, 201, 404, 200 e, por fim, o registro parado (503/504). Sem URL, roda local e reseta os bancos |
-| `postman/sd-sistema-academico.postman_collection.json` | A mesma bateria no Postman, com testes por requisição. Roda também via Newman: `newman run postman/*.json` |
+| `postman/sd-sistema-academico.postman_collection.json` | A mesma bateria no Postman, mais o histórico, com testes por requisição. Roda também via Newman: `newman run postman/*.json` |
 | `scripts/concorrencia.sh [URL]` | 10 alunos disputam ao mesmo tempo a **última vaga** da `SO-2026-1`: exatamente 1 DEFERIDA, 9 INDEFERIDA_SEM_VAGA, turma em 30/30 |
 | `scripts/db.sh [registro\|matricula]` | Os SELECTs da demo (vagas por turma, matrículas gravadas) nos bancos que rodam naquele host |
 | `scripts/grpc.sh <registro\|matricula> <Metodo> [json]` | Chama os serviços gRPC **por dentro** da rede do compose (grpcurl em container), sem passar pelo gateway |

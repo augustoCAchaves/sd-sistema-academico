@@ -768,6 +768,49 @@
               }
             }
           ]
+        },
+        {
+          "name": "18 · Histórico de Bruno (sem REDES-1) → 200",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/historico",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "historico"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenBruno}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', () => pm.expect(pm.response.code).to.be.oneOf([200]));",
+                  "pm.test('Bruno não tem REDES-1', () => pm.expect(pm.response.json().aprovadas.map(d => d.codigo)).to.not.include('REDES-1'));"
+                ]
+              }
+            }
+          ]
         }
       ]
     },
@@ -775,7 +818,7 @@
       "name": "4. Falha (pare o registro-service antes)",
       "item": [
         {
-          "name": "18 · Turmas com o registro parado → 503 / 504",
+          "name": "19 · Turmas com o registro parado → 503 / 504",
           "request": {
             "method": "GET",
             "header": [
