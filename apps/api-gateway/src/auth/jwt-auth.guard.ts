@@ -19,7 +19,7 @@ export class JwtAuthGuard implements CanActivate {
 
     const req = ctx.switchToHttp().getRequest<Request & { aluno?: AlunoAutenticado }>();
     const [tipo, token] = (req.header('authorization') ?? '').split(' ');
-    if (tipo !== 'Bearer' || !token) {
+    if (tipo?.toLowerCase() !== 'bearer' || !token) {
       throw new UnauthorizedException('Token ausente: envie Authorization: Bearer <token>.');
     }
 
