@@ -10,8 +10,11 @@ export function erroGrpc(code: status, message: string): RpcException {
 
 export function exigirPreenchidos(campos: Record<string, string>): void {
   const vazios = Object.keys(campos).filter((nome) => !campos[nome]?.trim());
-  if (vazios.length > 0) {
-    throw erroGrpc(status.INVALID_ARGUMENT, `${vazios.join(' e ')} obrigatorio(s)`);
+  if (vazios.length === 1) {
+    throw erroGrpc(status.INVALID_ARGUMENT, `${vazios[0]} e obrigatorio`);
+  }
+  if (vazios.length > 1) {
+    throw erroGrpc(status.INVALID_ARGUMENT, `${vazios.join(' e ')} sao obrigatorios`);
   }
 }
 

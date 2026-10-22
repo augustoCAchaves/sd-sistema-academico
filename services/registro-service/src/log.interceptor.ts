@@ -9,7 +9,9 @@ function descreverErro(err: unknown): string {
     const { code, message } = err.getError() as { code: status; message: string };
     return `${status[code]} ${message}`;
   }
-  return `FALHA ${err instanceof Error ? err.message.split('\n')[0] : String(err)}`;
+  const e = err as { name?: string; code?: unknown; message?: string; cause?: { code?: unknown } };
+  const codigo = e.code ?? e.cause?.code ?? e.name ?? 'erro';
+  return `FALHA ${String(codigo)} ${e.message?.split('\n')[0] ?? ''}`.trim();
 }
 
 @Injectable()
