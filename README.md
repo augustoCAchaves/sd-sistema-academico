@@ -315,12 +315,13 @@ Só muda quais serviços cada VM sobe e quais portas ela publica.
   git). Ele traz `COMPOSE_FILE=docker-compose.yml:docker-compose.gcp.yml`,
   então todo `docker compose` na VM já aplica o override
   [`docker-compose.gcp.yml`](docker-compose.gcp.yml). O override publica as
-  portas gRPC, que as outras VMs precisam alcançar, e troca o frontend de
-  `8080` para `80`.
+  portas gRPC, que as outras VMs precisam alcançar, troca o frontend de
+  `8080` para `80` e liga o `restart: unless-stopped`.
 - **As portas gRPC não são alcançáveis da internet.** As VMs de serviço têm IP
   externo só para baixar o Docker e clonar o repositório.
-- O `restart: unless-stopped` mantém os containers vivos depois de fechar o
-  SSH e de um reboot da VM.
+- O `restart: unless-stopped` (só nas VMs) mantém os containers vivos depois
+  de fechar o SSH e de um reboot da VM. No compose local ele não existe, então
+  os containers não sobem sozinhos quando o computador liga.
 
 ### Passo a passo
 

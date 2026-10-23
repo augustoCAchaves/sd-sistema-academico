@@ -1,13 +1,25 @@
 # Nas VMs: COMPOSE_FILE=docker-compose.yml:docker-compose.gcp.yml no .env (ver scripts/gcp.sh).
 services:
+  postgres-registro:
+    restart: unless-stopped
+
+  postgres-matricula:
+    restart: unless-stopped
+
   registro-service:
+    restart: unless-stopped
     ports:
       - "50052:50052"
 
   matricula-service:
+    restart: unless-stopped
     ports:
       - "50051:50051"
 
+  api-gateway:
+    restart: unless-stopped
+
   frontend:
+    restart: unless-stopped
     ports: !override
       - "80:80"
